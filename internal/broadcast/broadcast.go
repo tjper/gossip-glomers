@@ -2,16 +2,15 @@ package broadcast
 
 import (
 	"encoding/json"
-	"sync"
 
 	maelstrom "github.com/jepsen-io/maelstrom/demo/go"
+	"github.com/tjper/gossip-glomers/internal/safe"
 )
 
 func NewServer() *Server {
 	srv := &Server{
 		node:     maelstrom.NewNode(),
-		mutex:    new(sync.RWMutex),
-		messages: make([]int, 0),
+    messages: safe.NewSet[int](),
 	}
 	srv.node.Handle("broadcast", srv.broadcast)
 	srv.node.Handle("read", srv.read)
@@ -22,9 +21,7 @@ func NewServer() *Server {
 
 type Server struct {
 	node *maelstrom.Node
-
-	mutex    *sync.RWMutex
-	messages []int
+  messages *safe.Set[int]
 }
 
 func (s Server) Run() error {
@@ -42,9 +39,7 @@ func (s *Server) broadcast(req maelstrom.Message) error {
 		return err
 	}
 
-	s.mutex.Lock()
-	s.messages = append(s.messages, body.Message)
-	s.mutex.Unlock()
+  _ = s.messages.Add(body.Message)
 
 	body.MessageBody.Type = "broadcast_ok"
 	return s.node.Reply(req, body.MessageBody)
@@ -61,10 +56,7 @@ func (s *Server) read(req maelstrom.Message) error {
 		return err
 	}
 
-	s.mutex.RLock()
-	messages := make([]int, len(s.messages))
-	copy(messages, s.messages)
-	s.mutex.RUnlock()
+  messages := s.messages.Contents()
 
 	body.Type = "read_ok"
 	resp := readRequestBody{
