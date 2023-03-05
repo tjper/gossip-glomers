@@ -32,7 +32,7 @@ There are numerous ways to handle this. I'll break down three approaches and ran
 
 In this scenario a Vehicle has an antenna that is used to broadcast information. Instead of having the Vehicle be concerned with the configuraton the antenna, offload this task onto another type, and only accept a configured antenna as an argument to the NewVehicle function. With this solution the vehicle may still may broadcast information, but is no longer responsible for configuring how received data is handled.
 
-TBC ...
+(TODO)
 
 ```go
 // vehicle.go
@@ -69,3 +69,17 @@ func (a Antenna) Broadcast(msg string) error {
   return err
 }
 ```
+
+### Pointer Receivers
+
+(TODO)
+
+### Correct Constructor Sequence
+
+(TODO)
+
+3. Ensuring a slice is not leaking memory may require setting an item to nil. This can be done several ways.
+
+(TODO)
+
+4. Passing a loop variable to a closure, or taking a reference of a loop variable.
